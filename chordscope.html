@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chordscope — Chord Recognition & Tuner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #15130E;
+    --panel: #1E1B14;
+    --panel-2: #26221A;
+    --amber: #E8A33D;
+    --amber-dim: #8a6329;
+    --teal: #4FD1AE;
+    --cream: #EDE6D6;
+    --muted: #8a8272;
+    --line: #35301F;
+    --danger: #d9695a;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(circle at 50% -10%, #23200f 0%, var(--bg) 55%);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    padding: 28px 16px 60px;
+  }
+  .device{ width: 100%; max-width: 480px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size: 30px;
+    margin: 0 0 18px 0; letter-spacing: 0.5px;
+  }
+  h1 span{ color: var(--amber); }
+
+  .tabs{
+    display:flex; gap: 6px; margin-bottom: 14px;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 1.5px;
+    padding: 10px 0;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    user-select:none;
+    transition: all 0.15s ease;
+  }
+  .tab.active{
+    color: var(--bg);
+    background: var(--amber);
+    border-color: var(--amber);
+    font-weight: 700;
+  }
+
+  .panel{
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 22px 22px;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+  }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ---- Chord wheel ---- */
+  .wheel-wrap{ display:flex; justify-content:center; margin: 6px 0 10px; }
+  svg#wheel{ width: 280px; height: 280px; overflow: visible; }
+  .tick-label{
+    font-family:'JetBrains Mono', monospace; font-size: 13px; fill: var(--muted);
+    transition: fill 0.25s ease, font-weight 0.25s ease;
+  }
+  .tick-dot{ transition: r 0.2s ease, fill 0.2s ease, filter 0.2s ease; fill: #3a3527; }
+  .tick-dot.active{ fill: var(--amber); filter: drop-shadow(0 0 6px rgba(232,163,61,0.85)); }
+  .tick-dot.root{ fill: var(--teal); filter: drop-shadow(0 0 9px rgba(79,209,174,0.95)); }
+  .tick-label.active{ fill: var(--cream); font-weight: 500; }
+
+  .readout{ text-align:center; margin: 4px 0 6px; min-height: 100px; }
+  .chord-name{
+    font-family:'Space Grotesk', sans-serif; font-weight: 700; font-size: 50px;
+    line-height: 1; letter-spacing: 0.5px; color: var(--cream);
+  }
+  .chord-name.idle{ color: var(--muted); font-size: 26px; font-weight: 500; }
+  .chord-quality{
+    font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);
+    letter-spacing: 1.5px; margin-top: 6px; text-transform: uppercase;
+  }
+  .chord-notes{
+    font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--amber);
+    letter-spacing: 2px; margin-top: 8px; min-height: 16px;
+  }
+
+  /* ---- Tuner ---- */
+  .tuner-wrap{ display:flex; justify-content:center; margin: 8px 0 4px; }
+  svg#gauge{ width: 280px; height: 170px; overflow: visible; }
+  .gauge-arc{ fill:none; stroke: var(--line); stroke-width: 8; }
+  .gauge-tick{ stroke: var(--muted); stroke-width: 2; }
+  .gauge-tick.center{ stroke: var(--teal); stroke-width: 3; }
+  .gauge-needle{
+    stroke: var(--amber); stroke-width: 3; stroke-linecap: round;
+    transition: transform 0.1s ease-out;
+    transform-origin: 140px 150px;
+  }
+  .gauge-needle.intune{ stroke: var(--teal); }
+  .gauge-hub{ fill: #100e0a; stroke: var(--line); stroke-width: 2; }
+
+  .tuner-readout{ text-align:center; margin-top: -6px; }
+  .tuner-note{
+    font-family:'Space Grotesk', sans-serif; font-weight: 700; font-size: 64px;
+    line-height: 1; color: var(--cream);
+  }
+  .tuner-note .oct{ font-size: 28px; color: var(--muted); vertical-align: super; }
+  .tuner-note.idle{ color: var(--muted); font-size: 26px; font-weight: 500; }
+  .tuner-cents{
+    font-family:'JetBrains Mono', monospace; font-size: 14px; color: var(--amber);
+    margin-top: 6px; letter-spacing: 1px; min-height: 18px;
+  }
+  .tuner-cents.intune{ color: var(--teal); }
+  .tuner-hz{
+    font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+    margin-top: 4px; letter-spacing: 1px; min-height: 14px;
+  }
+  .ref-row{
+    display:flex; align-items:center; justify-content:center; gap: 8px;
+    margin-top: 14px; font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+  }
+  .ref-row input{
+    width: 56px; background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--cream); font-family:'JetBrains Mono', monospace; font-size: 12px;
+    border-radius: 6px; padding: 4px 6px; text-align:center;
+  }
+
+  /* ---- Meters ---- */
+  .meter-row{ display:flex; align-items:center; gap: 10px; margin: 16px 4px 0; }
+  .meter-label{
+    font-family:'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+    letter-spacing: 1.5px; width: 66px; flex-shrink:0;
+  }
+  .meter{
+    flex:1; height: 10px; border-radius: 3px;
+    background: repeating-linear-gradient(90deg, var(--panel) 0 2px, #100e0a 2px 3px);
+    overflow:hidden; position:relative; border: 1px solid var(--line);
+  }
+  .meter-fill{
+    height:100%; width:0%;
+    background: linear-gradient(90deg, var(--teal), var(--amber) 70%, var(--danger) 95%);
+    transition: width 0.08s linear;
+  }
+
+  /* ---- Controls ---- */
+  .controls{ display:flex; justify-content:center; margin-top: 20px; }
+  .footswitch{
+    width: 92px; height: 92px; border-radius: 50%; border: none; cursor: pointer;
+    background: radial-gradient(circle at 35% 30%, #3a3527, #201d15 70%);
+    box-shadow: 0 8px 0 #0d0b07, 0 12px 20px rgba(0,0,0,0.5), inset 0 0 0 3px #100e0a;
+    position: relative; transition: transform 0.05s ease, box-shadow 0.05s ease;
+  }
+  .footswitch:active{ transform: translateY(6px); box-shadow: 0 2px 0 #0d0b07, 0 4px 10px rgba(0,0,0,0.5), inset 0 0 0 3px #100e0a; }
+  .footswitch .led{
+    position:absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 9px; height: 9px; border-radius: 50%; background: #3a3527; transition: all 0.2s ease;
+  }
+  .footswitch.on .led{ background: var(--teal); box-shadow: 0 0 10px 2px rgba(79,209,174,0.9); }
+  .footswitch .icon{
+    position:absolute; bottom: 20px; left:50%; transform: translateX(-50%);
+    font-family:'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted);
+  }
+
+  .status{
+    text-align:center; font-family:'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); margin-top: 14px; letter-spacing: 1px; min-height: 14px;
+  }
+  .status.error{ color: var(--danger); }
+
+  .note{
+    font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+    text-align:center; margin-top: 18px; line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="eyebrow">LIVE PITCH ANALYSIS</div>
+  <h1>Chord<span>scope</span></h1>
+
+  <div class="tabs">
+    <div class="tab active" data-mode="chord">CHORD</div>
+    <div class="tab" data-mode="tuner">TUNER</div>
+  </div>
+
+  <div class="panel">
+
+    <!-- CHORD VIEW -->
+    <div class="view active" id="view-chord">
+      <div class="wheel-wrap"><svg id="wheel" viewBox="0 0 280 280"></svg></div>
+      <div class="readout">
+        <div class="chord-name idle" id="chordName">—</div>
+        <div class="chord-quality" id="chordQuality"></div>
+        <div class="chord-notes" id="chordNotes"></div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">SIGNAL</div>
+        <div class="meter"><div class="meter-fill" id="signalMeter"></div></div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">MATCH</div>
+        <div class="meter"><div class="meter-fill" id="matchMeter"></div></div>
+      </div>
+    </div>
+
+    <!-- TUNER VIEW -->
+    <div class="view" id="view-tuner">
+      <div class="tuner-wrap">
+        <svg id="gauge" viewBox="0 0 280 170"></svg>
+      </div>
+      <div class="tuner-readout">
+        <div class="tuner-note idle" id="tunerNote">—</div>
+        <div class="tuner-cents" id="tunerCents"></div>
+        <div class="tuner-hz" id="tunerHz"></div>
+      </div>
+      <div class="ref-row">
+        <label for="refPitch">A4 =</label>
+        <input type="number" id="refPitch" value="440" min="415" max="466">
+        <span>Hz</span>
+      </div>
+      <div class="meter-row" style="margin-top:18px;">
+        <div class="meter-label">SIGNAL</div>
+        <div class="meter"><div class="meter-fill" id="signalMeterTuner"></div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="footswitch" id="toggleBtn">
+        <span class="led"></span>
+        <span class="icon">LISTEN</span>
+      </button>
+    </div>
+
+    <div class="status" id="status">Tap to start listening</div>
+  </div>
+
+  <div class="note">Works best in a quiet room, one instrument at a time.<br>Detection reflects harmonic content — it's an estimate, not a certainty.</div>
+</div>
+
+<script>
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+/* ---------------- Chord vocabulary ----------------
+   Intervals are semitone pitch-classes from the root.
+   Note: because detection works on pitch class only (no octave/bass info),
+   some "add" chords are enharmonically identical in pitch-class terms to
+   their extended-chord cousins (e.g. add9 ≈ 9 without the 7th; a written
+   "#13" tension lands on the same pitch class as a b6/#5, so altered
+   dominants like 7#5 cover that territory). Common jazz names are used. */
+const CHORD_QUALITIES = [
+  { suffix: '',      label: 'major',                intervals: [0,4,7] },
+  { suffix: 'm',     label: 'minor',                 intervals: [0,3,7] },
+  { suffix: 'dim',   label: 'diminished',            intervals: [0,3,6] },
+  { suffix: 'aug',   label: 'augmented',             intervals: [0,4,8] },
+  { suffix: 'sus2',  label: 'suspended 2nd',         intervals: [0,2,7] },
+  { suffix: 'sus4',  label: 'suspended 4th',         intervals: [0,5,7] },
+  { suffix: '6',     label: 'major 6th',             intervals: [0,4,7,9] },
+  { suffix: 'm6',    label: 'minor 6th',             intervals: [0,3,7,9] },
+  { suffix: '6/9',   label: 'six-nine',              intervals: [0,2,4,7,9] },
+  { suffix: '7',     label: 'dominant 7th',          intervals: [0,4,7,10] },
+  { suffix: 'maj7',  label: 'major 7th',             intervals: [0,4,7,11] },
+  { suffix: 'm7',    label: 'minor 7th',             intervals: [0,3,7,10] },
+  { suffix: 'm7b5',  label: 'half-diminished',       intervals: [0,3,6,10] },
+  { suffix: 'dim7',  label: 'diminished 7th',        intervals: [0,3,6,9] },
+  { suffix: 'mMaj7', label: 'minor-major 7th',       intervals: [0,3,7,11] },
+  { suffix: '7#5',   label: 'dominant 7 sharp 5',    intervals: [0,4,8,10] },
+  { suffix: '7b5',   label: 'dominant 7 flat 5',     intervals: [0,4,6,10] },
+  { suffix: 'add9',  label: 'add 9 (add2)',          intervals: [0,2,4,7] },
+  { suffix: 'madd9', label: 'minor add 9',           intervals: [0,2,3,7] },
+  { suffix: 'add11', label: 'add 11 (add4)',         intervals: [0,4,5,7] },
+  { suffix: '9',     label: 'dominant 9th',          intervals: [0,2,4,7,10] },
+  { suffix: 'maj9',  label: 'major 9th',             intervals: [0,2,4,7,11] },
+  { suffix: 'm9',    label: 'minor 9th',             intervals: [0,2,3,7,10] },
+  { suffix: '7b9',   label: 'dominant 7 flat 9',     intervals: [0,1,4,7,10] },
+  { suffix: '7#9',   label: 'dominant 7 sharp 9',    intervals: [0,3,4,7,10] },
+  { suffix: '7#11',  label: 'dominant 7 sharp 11',   intervals: [0,4,6,7,10] },
+  { suffix: '11',    label: 'dominant 11th',         intervals: [0,2,4,5,7,10] },
+  { suffix: 'm11',   label: 'minor 11th',            intervals: [0,2,3,5,7,10] },
+  { suffix: '13',    label: 'dominant 13th',         intervals: [0,2,4,7,9,10] },
+  { suffix: 'maj13', label: 'major 13th',            intervals: [0,2,4,7,9,11] },
+];
+
+const TEMPLATES = [];
+for (let root = 0; root < 12; root++) {
+  for (const q of CHORD_QUALITIES) {
+    const vec = new Array(12).fill(0);
+    for (const iv of q.intervals) vec[(root + iv) % 12] = 1;
+    TEMPLATES.push({ root, quality: q, vec, size: q.intervals.length });
+  }
+}
+
+/* ---------------- Shared audio state ---------------- */
+let audioCtx = null;
+let source = null;
+let stream = null;
+let rafId = null;
+let running = false;
+let mode = 'chord';
+
+let analyserFreq = null;  // large FFT for chroma (chord mode)
+let analyserTime = null;  // smaller buffer for autocorrelation (tuner mode)
+
+let smoothChroma = new Array(12).fill(0);
+const SMOOTHING = 0.72;
+
+/* ---------------- DOM refs ---------------- */
+const wheel = document.getElementById('wheel');
+const chordNameEl = document.getElementById('chordName');
+const chordQualityEl = document.getElementById('chordQuality');
+const chordNotesEl = document.getElementById('chordNotes');
+const signalMeter = document.getElementById('signalMeter');
+const matchMeter = document.getElementById('matchMeter');
+const signalMeterTuner = document.getElementById('signalMeterTuner');
+const statusEl = document.getElementById('status');
+const toggleBtn = document.getElementById('toggleBtn');
+const tabs = document.querySelectorAll('.tab');
+const viewChord = document.getElementById('view-chord');
+const viewTuner = document.getElementById('view-tuner');
+const tunerNoteEl = document.getElementById('tunerNote');
+const tunerCentsEl = document.getElementById('tunerCents');
+const tunerHzEl = document.getElementById('tunerHz');
+const refPitchInput = document.getElementById('refPitch');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    mode = tab.dataset.mode;
+    viewChord.classList.toggle('active', mode === 'chord');
+    viewTuner.classList.toggle('active', mode === 'tuner');
+  });
+});
+
+/* ---------------- Chord wheel SVG build ---------------- */
+const CX = 140, CY = 140, R = 108;
+const dots = [], labels = [];
+for (let i = 0; i < 12; i++) {
+  const angle = (Math.PI * 2 * i / 12) - Math.PI / 2;
+  const x = CX + R * Math.cos(angle), y = CY + R * Math.sin(angle);
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('r', 6);
+  dot.setAttribute('class','tick-dot');
+  wheel.appendChild(dot); dots.push(dot);
+  const lx = CX + (R + 24) * Math.cos(angle), ly = CY + (R + 24) * Math.sin(angle);
+  const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+  label.setAttribute('x', lx); label.setAttribute('y', ly);
+  label.setAttribute('text-anchor','middle'); label.setAttribute('dominant-baseline','middle');
+  label.setAttribute('class','tick-label'); label.textContent = NOTE_NAMES[i];
+  wheel.appendChild(label); labels.push(label);
+}
+const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+ring.setAttribute('cx', CX); ring.setAttribute('cy', CY); ring.setAttribute('r', R);
+ring.setAttribute('fill','none'); ring.setAttribute('stroke','#2c281c'); ring.setAttribute('stroke-width','1');
+wheel.insertBefore(ring, wheel.firstChild);
+
+/* ---------------- Tuner gauge SVG build ---------------- */
+const gauge = document.getElementById('gauge');
+const GCX = 140, GCY = 150, GR = 120;
+// arc from -50 to +50 cents mapped to -60deg..+60deg
+function polar(cx, cy, r, deg) {
+  const rad = (deg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+const arcStart = polar(GCX, GCY, GR, -60);
+const arcEnd = polar(GCX, GCY, GR, 60);
+const arcPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+arcPath.setAttribute('d', `M ${arcStart.x} ${arcStart.y} A ${GR} ${GR} 0 0 1 ${arcEnd.x} ${arcEnd.y}`);
+arcPath.setAttribute('class','gauge-arc');
+gauge.appendChild(arcPath);
+// highlighted "in tune" zone (-5 to +5 cents)
+const zoneStart = polar(GCX, GCY, GR, -6);
+const zoneEnd = polar(GCX, GCY, GR, 6);
+const zonePath = document.createElementNS('http://www.w3.org/2000/svg','path');
+zonePath.setAttribute('d', `M ${zoneStart.x} ${zoneStart.y} A ${GR} ${GR} 0 0 1 ${zoneEnd.x} ${zoneEnd.y}`);
+zonePath.setAttribute('fill','none');
+zonePath.setAttribute('stroke', '#4FD1AE');
+zonePath.setAttribute('stroke-opacity', '0.35');
+zonePath.setAttribute('stroke-width', '8');
+gauge.appendChild(zonePath);
+// tick marks every 10 cents from -50 to 50
+for (let c = -50; c <= 50; c += 10) {
+  const deg = (c / 50) * 60;
+  const inner = polar(GCX, GCY, GR - 10, deg);
+  const outer = polar(GCX, GCY, GR, deg);
+  const tick = document.createElementNS('http://www.w3.org/2000/svg','line');
+  tick.setAttribute('x1', inner.x); tick.setAttribute('y1', inner.y);
+  tick.setAttribute('x2', outer.x); tick.setAttribute('y2', outer.y);
+  tick.setAttribute('class', c === 0 ? 'gauge-tick center' : 'gauge-tick');
+  gauge.appendChild(tick);
+}
+const needle = document.createElementNS('http://www.w3.org/2000/svg','line');
+needle.setAttribute('x1', GCX); needle.setAttribute('y1', GCY);
+needle.setAttribute('x2', GCX); needle.setAttribute('y2', GCY - GR + 16);
+needle.setAttribute('class','gauge-needle');
+needle.id = 'needle';
+gauge.appendChild(needle);
+const hub = document.createElementNS('http://www.w3.org/2000/svg','circle');
+hub.setAttribute('cx', GCX); hub.setAttribute('cy', GCY); hub.setAttribute('r', 7);
+hub.setAttribute('class','gauge-hub');
+gauge.appendChild(hub);
+
+function setNeedle(cents) {
+  const clamped = Math.max(-50, Math.min(50, cents));
+  const deg = (clamped / 50) * 60;
+  needle.style.transform = `rotate(${deg}deg)`;
+  needle.classList.toggle('intune', Math.abs(cents) <= 5);
+}
+
+/* ---------------- Chroma / chord matching ---------------- */
+function freqToPitchClass(freq) {
+  const semisFromA4 = 12 * Math.log2(freq / 440);
+  let pc = Math.round(semisFromA4) % 12;
+  pc = ((pc + 9) % 12 + 12) % 12;
+  return pc;
+}
+function computeChroma(freqData, sampleRate, fftSize) {
+  const chroma = new Array(12).fill(0);
+  const binHz = sampleRate / fftSize;
+  const minBin = Math.max(1, Math.floor(55 / binHz));
+  const maxBin = Math.min(freqData.length - 1, Math.ceil(4200 / binHz));
+  for (let i = minBin; i <= maxBin; i++) {
+    const db = freqData[i];
+    if (db < -95) continue;
+    const freq = i * binHz;
+    const mag = Math.pow(10, db / 20);
+    chroma[freqToPitchClass(freq)] += mag;
+  }
+  const max = Math.max(...chroma, 1e-9);
+  return chroma.map(v => v / max);
+}
+function cosineSim(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  if (na === 0 || nb === 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+function matchChord(chroma) {
+  let best = null, bestAdj = -Infinity, bestScore = 0;
+  for (const t of TEMPLATES) {
+    const score = cosineSim(chroma, t.vec);
+    const adj = score - 0.015 * Math.max(0, t.size - 3); // bias toward simpler chords
+    if (adj > bestAdj) { bestAdj = adj; best = t; bestScore = score; }
+  }
+  return { template: best, score: bestScore };
+}
+function updateWheel(chroma, activeRoot) {
+  for (let i = 0; i < 12; i++) {
+    const v = chroma[i];
+    dots[i].setAttribute('r', (6 + v * 6).toFixed(1));
+    dots[i].classList.toggle('active', v > 0.35);
+    dots[i].classList.toggle('root', activeRoot === i);
+    labels[i].classList.toggle('active', v > 0.35);
+  }
+}
+
+let lastConfirmed = null, confirmStreak = 0;
+
+function analyzeChordFrame() {
+  const freqData = new Float32Array(analyserFreq.frequencyBinCount);
+  analyserFreq.getFloatFrequencyData(freqData);
+
+  let peakDb = -120;
+  for (let i = 0; i < freqData.length; i++) if (freqData[i] > peakDb) peakDb = freqData[i];
+  const level = Math.max(0, Math.min(1, (peakDb + 90) / 60));
+  signalMeter.style.width = (level * 100).toFixed(0) + '%';
+
+  const rawChroma = computeChroma(freqData, audioCtx.sampleRate, analyserFreq.fftSize);
+  for (let i = 0; i < 12; i++) smoothChroma[i] = smoothChroma[i]*SMOOTHING + rawChroma[i]*(1-SMOOTHING);
+
+  if (level < 0.08) {
+    matchMeter.style.width = '0%';
+    updateWheel(smoothChroma.map(v => v*0.4), null);
+    confirmStreak = 0;
+    return;
+  }
+
+  const { template, score } = matchChord(smoothChroma);
+  matchMeter.style.width = (Math.max(0, score) * 100).toFixed(0) + '%';
+
+  const CONFIDENCE_THRESHOLD = 0.72;
+  if (score >= CONFIDENCE_THRESHOLD) {
+    const chordKey = template.root + '-' + template.quality.suffix;
+    if (chordKey === lastConfirmed) confirmStreak++;
+    else { lastConfirmed = chordKey; confirmStreak = 1; }
+    if (confirmStreak >= 2) {
+      chordNameEl.textContent = NOTE_NAMES[template.root] + template.quality.suffix;
+      chordNameEl.classList.remove('idle');
+      chordQualityEl.textContent = template.quality.label;
+      chordNotesEl.textContent = template.quality.intervals.map(iv => NOTE_NAMES[(template.root+iv)%12]).join('   ');
+      updateWheel(smoothChroma, template.root);
+    }
+  } else {
+    confirmStreak = 0;
+    updateWheel(smoothChroma, null);
+  }
+}
+
+/* ---------------- Tuner: YIN pitch detection ----------------
+   YIN (de Cheveigné & Kawahara) is the standard algorithm behind most
+   instrument tuners. Compared to plain autocorrelation it resists
+   octave errors (mistaking a harmonic for the fundamental) much better,
+   which is the main thing that makes a tuner feel "jumpy" or hard to
+   trust. */
+let smoothCents = 0;
+let smoothFreq = 0;
+
+function yinDetectPitch(buf, sampleRate) {
+  const SIZE = buf.length;
+  let rms = 0;
+  for (let i = 0; i < SIZE; i++) rms += buf[i]*buf[i];
+  rms = Math.sqrt(rms / SIZE);
+  if (rms < 0.008) return { freq: -1, level: rms };
+
+  const minFreq = 55, maxFreq = 1000;
+  const tauMin = Math.max(2, Math.floor(sampleRate / maxFreq));
+  const tauMax = Math.min(SIZE - 2, Math.ceil(sampleRate / minFreq));
+
+  // Step 1: difference function d(tau)
+  const d = new Float32Array(tauMax + 1);
+  for (let tau = tauMin; tau <= tauMax; tau++) {
+    let sum = 0;
+    const n = SIZE - tau;
+    for (let i = 0; i < n; i++) {
+      const delta = buf[i] - buf[i + tau];
+      sum += delta * delta;
+    }
+    d[tau] = sum;
+  }
+
+  // Step 2: cumulative mean normalized difference function
+  const cmndf = new Float32Array(tauMax + 1);
+  cmndf[tauMin] = 1;
+  let runningSum = 0;
+  for (let tau = tauMin; tau <= tauMax; tau++) {
+    runningSum += d[tau];
+    cmndf[tau] = d[tau] / ((runningSum / (tau - tauMin + 1)) || 1);
+  }
+
+  // Step 3: find first dip below threshold (absolute method), else global min
+  const threshold = 0.15;
+  let chosenTau = -1;
+  for (let tau = tauMin + 1; tau < tauMax; tau++) {
+    if (cmndf[tau] < threshold && cmndf[tau] < cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
+      chosenTau = tau;
+      break;
+    }
+  }
+  if (chosenTau === -1) {
+    let minVal = Infinity;
+    for (let tau = tauMin + 1; tau < tauMax; tau++) {
+      if (cmndf[tau] < minVal) { minVal = cmndf[tau]; chosenTau = tau; }
+    }
+    if (minVal > 0.5) return { freq: -1, level: rms }; // too unclear a pitch, bail
+  }
+
+  // Step 4: parabolic interpolation around chosenTau for sub-sample accuracy
+  const x1 = cmndf[chosenTau - 1], x2 = cmndf[chosenTau], x3 = cmndf[chosenTau + 1];
+  const a = (x1 + x3 - 2 * x2) / 2;
+  const b = (x3 - x1) / 2;
+  let refinedTau = chosenTau;
+  if (a !== 0) refinedTau = chosenTau - b / (2 * a);
+
+  const freq = sampleRate / refinedTau;
+  return { freq, level: rms };
+}
+
+let candidateMidi = null, candidateStreak = 0;
+let lockedMidi = null;
+let lastSignalTime = 0;
+const NOTE_HOLD_MS = 450; // keep showing the note briefly through natural decay/silence
+
+function analyzeTunerFrame() {
+  const buf = new Float32Array(analyserTime.fftSize);
+  analyserTime.getFloatTimeDomainData(buf);
+
+  const { freq, level } = yinDetectPitch(buf, audioCtx.sampleRate);
+  const levelNorm = Math.max(0, Math.min(1, level * 8));
+  signalMeterTuner.style.width = (levelNorm * 100).toFixed(0) + '%';
+
+  const now = performance.now();
+
+  if (freq <= 0) {
+    // no clear pitch this frame — hold the last locked note briefly instead
+    // of blanking instantly, so short gaps between notes don't flicker
+    if (lockedMidi === null || now - lastSignalTime > NOTE_HOLD_MS) {
+      tunerNoteEl.textContent = '—';
+      tunerNoteEl.classList.add('idle');
+      tunerCentsEl.textContent = '';
+      tunerHzEl.textContent = '';
+      setNeedle(0);
+      lockedMidi = null;
+      candidateMidi = null;
+      candidateStreak = 0;
+    }
+    return;
+  }
+  lastSignalTime = now;
+
+  const A4 = parseFloat(refPitchInput.value) || 440;
+  smoothFreq = smoothFreq ? smoothFreq * 0.75 + freq * 0.25 : freq;
+  const midiFloat = 69 + 12 * Math.log2(smoothFreq / A4);
+  const midiRounded = Math.round(midiFloat);
+
+  // Require a few consistent frames on the same note before switching the
+  // displayed note — this is what stops the letter from flickering between
+  // neighboring notes when the raw estimate wobbles near a boundary.
+  if (midiRounded === candidateMidi) {
+    candidateStreak++;
+  } else {
+    candidateMidi = midiRounded;
+    candidateStreak = 1;
+  }
+  if (lockedMidi === null || candidateStreak >= 3) {
+    lockedMidi = midiRounded;
+  }
+
+  // Cents are measured against the locked note's exact frequency, so small
+  // jitter in the raw pitch estimate doesn't make the needle twitch between
+  // two different reference notes.
+  const targetFreq = A4 * Math.pow(2, (lockedMidi - 69) / 12);
+  const cents = 1200 * Math.log2(smoothFreq / targetFreq);
+  smoothCents = smoothCents * 0.65 + cents * 0.35;
+
+  const noteIdx = ((lockedMidi % 12) + 12) % 12;
+  const octave = Math.floor(lockedMidi / 12) - 1;
+
+  tunerNoteEl.classList.remove('idle');
+  tunerNoteEl.innerHTML = NOTE_NAMES[noteIdx] + '<span class="oct">' + octave + '</span>';
+
+  const inTune = Math.abs(smoothCents) <= 5;
+  tunerCentsEl.textContent = (smoothCents > 0 ? '+' : '') + smoothCents.toFixed(0) + ' cents' + (inTune ? '  ·  IN TUNE' : (smoothCents > 0 ? '  ·  SHARP' : '  ·  FLAT'));
+  tunerCentsEl.classList.toggle('intune', inTune);
+  tunerHzEl.textContent = smoothFreq.toFixed(1) + ' Hz  (target ' + targetFreq.toFixed(1) + ' Hz)';
+
+  setNeedle(smoothCents);
+}
+
+/* ---------------- Main loop ---------------- */
+function loop() {
+  if (!running) return;
+  if (mode === 'chord') analyzeChordFrame();
+  else analyzeTunerFrame();
+  rafId = requestAnimationFrame(loop);
+}
+
+/* ---------------- Start / stop ---------------- */
+async function start() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+  } catch (err) {
+    statusEl.textContent = 'Microphone access denied or unavailable';
+    statusEl.classList.add('error');
+    return;
+  }
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  source = audioCtx.createMediaStreamSource(stream);
+
+  analyserFreq = audioCtx.createAnalyser();
+  analyserFreq.fftSize = 16384;
+  analyserFreq.smoothingTimeConstant = 0;
+
+  analyserTime = audioCtx.createAnalyser();
+  analyserTime.fftSize = 4096;
+  analyserTime.smoothingTimeConstant = 0;
+
+  source.connect(analyserFreq);
+  source.connect(analyserTime);
+
+  running = true;
+  toggleBtn.classList.add('on');
+  statusEl.classList.remove('error');
+  statusEl.textContent = 'Listening';
+
+  chordNameEl.textContent = '—'; chordNameEl.classList.add('idle');
+  chordQualityEl.textContent = ''; chordNotesEl.textContent = '';
+  tunerNoteEl.textContent = '—'; tunerNoteEl.classList.add('idle');
+  tunerCentsEl.textContent = ''; tunerHzEl.textContent = '';
+
+  smoothChroma = new Array(12).fill(0);
+  smoothCents = 0; smoothFreq = 0;
+  lastConfirmed = null; confirmStreak = 0;
+  candidateMidi = null; candidateStreak = 0; lockedMidi = null; lastSignalTime = 0;
+
+  loop();
+}
+
+function stop() {
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (audioCtx) audioCtx.close();
+  toggleBtn.classList.remove('on');
+  statusEl.textContent = 'Tap to start listening';
+
+  chordNameEl.textContent = '—'; chordNameEl.classList.add('idle');
+  chordQualityEl.textContent = ''; chordNotesEl.textContent = '';
+  tunerNoteEl.textContent = '—'; tunerNoteEl.classList.add('idle');
+  tunerCentsEl.textContent = ''; tunerHzEl.textContent = '';
+  signalMeter.style.width = '0%'; matchMeter.style.width = '0%'; signalMeterTuner.style.width = '0%';
+  updateWheel(new Array(12).fill(0), null);
+  setNeedle(0);
+  candidateMidi = null; candidateStreak = 0; lockedMidi = null; lastSignalTime = 0;
+}
+
+toggleBtn.addEventListener('click', () => { if (running) stop(); else start(); });
+</script>
+</body>
+</html>
