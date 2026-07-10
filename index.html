@@ -28,7 +28,7 @@
     min-height: 100vh;
     display:flex;
     justify-content:center;
-    padding: 28px 16px 60px;
+    padding: clamp(16px, 5vw, 28px) clamp(10px, 4vw, 16px) 60px;
   }
   .device{ width: 100%; max-width: 480px; }
   .eyebrow{
@@ -37,7 +37,8 @@
     text-transform: uppercase; margin-bottom: 4px;
   }
   h1{
-    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size: 30px;
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size: clamp(24px, 7vw, 30px);
     margin: 0 0 18px 0; letter-spacing: 0.5px;
   }
   h1 span{ color: var(--amber); }
@@ -49,8 +50,8 @@
     flex:1;
     text-align:center;
     font-family:'JetBrains Mono', monospace;
-    font-size: 12px; letter-spacing: 1.5px;
-    padding: 10px 0;
+    font-size: clamp(11px, 3vw, 12px); letter-spacing: 1.5px;
+    padding: 10px 4px;
     border-radius: 10px;
     border: 1px solid var(--line);
     background: var(--panel);
@@ -70,7 +71,7 @@
     background: linear-gradient(180deg, var(--panel-2), var(--panel));
     border: 1px solid var(--line);
     border-radius: 18px;
-    padding: 26px 22px 22px;
+    padding: clamp(18px, 5vw, 26px) clamp(14px, 4vw, 22px) 22px;
     box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
     position: relative;
   }
@@ -79,7 +80,7 @@
 
   /* ---- Chord wheel ---- */
   .wheel-wrap{ display:flex; justify-content:center; margin: 6px 0 10px; }
-  svg#wheel{ width: 280px; height: 280px; overflow: visible; }
+  svg#wheel{ width: 100%; max-width: 280px; height: auto; overflow: visible; }
   .tick-label{
     font-family:'JetBrains Mono', monospace; font-size: 13px; fill: var(--muted);
     transition: fill 0.25s ease, font-weight 0.25s ease;
@@ -91,22 +92,24 @@
 
   .readout{ text-align:center; margin: 4px 0 6px; min-height: 100px; }
   .chord-name{
-    font-family:'Space Grotesk', sans-serif; font-weight: 700; font-size: 50px;
+    font-family:'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(34px, 11vw, 50px);
     line-height: 1; letter-spacing: 0.5px; color: var(--cream);
+    word-break: break-word;
   }
-  .chord-name.idle{ color: var(--muted); font-size: 26px; font-weight: 500; }
+  .chord-name.idle{ color: var(--muted); font-size: clamp(20px, 6vw, 26px); font-weight: 500; }
   .chord-quality{
     font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);
     letter-spacing: 1.5px; margin-top: 6px; text-transform: uppercase;
   }
   .chord-notes{
-    font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--amber);
+    font-family:'JetBrains Mono', monospace; font-size: clamp(11px, 3vw, 13px); color: var(--amber);
     letter-spacing: 2px; margin-top: 8px; min-height: 16px;
   }
 
   /* ---- Tuner ---- */
   .tuner-wrap{ display:flex; justify-content:center; margin: 8px 0 4px; }
-  svg#gauge{ width: 280px; height: 170px; overflow: visible; }
+  svg#gauge{ width: 100%; max-width: 280px; height: auto; overflow: visible; }
   .gauge-arc{ fill:none; stroke: var(--line); stroke-width: 8; }
   .gauge-tick{ stroke: var(--muted); stroke-width: 2; }
   .gauge-tick.center{ stroke: var(--teal); stroke-width: 3; }
@@ -120,22 +123,24 @@
 
   .tuner-readout{ text-align:center; margin-top: -6px; }
   .tuner-note{
-    font-family:'Space Grotesk', sans-serif; font-weight: 700; font-size: 64px;
+    font-family:'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(44px, 14vw, 64px);
     line-height: 1; color: var(--cream);
   }
-  .tuner-note .oct{ font-size: 28px; color: var(--muted); vertical-align: super; }
-  .tuner-note.idle{ color: var(--muted); font-size: 26px; font-weight: 500; }
+  .tuner-note .oct{ font-size: 0.44em; color: var(--muted); vertical-align: super; }
+  .tuner-note.idle{ color: var(--muted); font-size: clamp(20px, 6vw, 26px); font-weight: 500; }
   .tuner-cents{
-    font-family:'JetBrains Mono', monospace; font-size: 14px; color: var(--amber);
+    font-family:'JetBrains Mono', monospace; font-size: clamp(12px, 3.4vw, 14px); color: var(--amber);
     margin-top: 6px; letter-spacing: 1px; min-height: 18px;
   }
   .tuner-cents.intune{ color: var(--teal); }
   .tuner-hz{
     font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
     margin-top: 4px; letter-spacing: 1px; min-height: 14px;
+    word-break: break-word;
   }
   .ref-row{
-    display:flex; align-items:center; justify-content:center; gap: 8px;
+    display:flex; align-items:center; justify-content:center; gap: 8px; flex-wrap: wrap;
     margin-top: 14px; font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
   }
   .ref-row input{
@@ -145,10 +150,10 @@
   }
 
   /* ---- Meters ---- */
-  .meter-row{ display:flex; align-items:center; gap: 10px; margin: 16px 4px 0; }
+  .meter-row{ display:flex; align-items:center; gap: 10px; margin: 16px 4px 0; flex-wrap: nowrap; }
   .meter-label{
     font-family:'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
-    letter-spacing: 1.5px; width: 66px; flex-shrink:0;
+    letter-spacing: 1.5px; width: clamp(52px, 14vw, 66px); flex-shrink:0;
   }
   .meter{
     flex:1; height: 10px; border-radius: 3px;
@@ -164,7 +169,8 @@
   /* ---- Controls ---- */
   .controls{ display:flex; justify-content:center; margin-top: 20px; }
   .footswitch{
-    width: 92px; height: 92px; border-radius: 50%; border: none; cursor: pointer;
+    width: clamp(76px, 22vw, 92px); height: clamp(76px, 22vw, 92px);
+    border-radius: 50%; border: none; cursor: pointer;
     background: radial-gradient(circle at 35% 30%, #3a3527, #201d15 70%);
     box-shadow: 0 8px 0 #0d0b07, 0 12px 20px rgba(0,0,0,0.5), inset 0 0 0 3px #100e0a;
     position: relative; transition: transform 0.05s ease, box-shadow 0.05s ease;
@@ -189,6 +195,21 @@
   .note{
     font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
     text-align:center; margin-top: 18px; line-height:1.6;
+  }
+
+  /* ---- Responsive breakpoints ---- */
+  @media (max-width: 360px){
+    .meter-label{ width: 46px; font-size: 9px; letter-spacing: 1px; }
+    .ref-row{ font-size: 10px; }
+  }
+  @media (min-width: 560px){
+    .device{ max-width: 520px; }
+    svg#wheel, svg#gauge{ max-width: 320px; }
+  }
+  @media (max-height: 700px) and (orientation: landscape){
+    .wheel-wrap, .tuner-wrap{ margin-top: 0; }
+    .readout{ min-height: auto; }
+    .note{ display: none; }
   }
 </style>
 </head>
@@ -267,37 +288,53 @@ const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
    "#13" tension lands on the same pitch class as a b6/#5, so altered
    dominants like 7#5 cover that territory). Common jazz names are used. */
 const CHORD_QUALITIES = [
-  { suffix: '',      label: 'major',                intervals: [0,4,7] },
-  { suffix: 'm',     label: 'minor',                 intervals: [0,3,7] },
-  { suffix: 'dim',   label: 'diminished',            intervals: [0,3,6] },
-  { suffix: 'aug',   label: 'augmented',             intervals: [0,4,8] },
-  { suffix: 'sus2',  label: 'suspended 2nd',         intervals: [0,2,7] },
-  { suffix: 'sus4',  label: 'suspended 4th',         intervals: [0,5,7] },
-  { suffix: '6',     label: 'major 6th',             intervals: [0,4,7,9] },
-  { suffix: 'm6',    label: 'minor 6th',             intervals: [0,3,7,9] },
-  { suffix: '6/9',   label: 'six-nine',              intervals: [0,2,4,7,9] },
-  { suffix: '7',     label: 'dominant 7th',          intervals: [0,4,7,10] },
-  { suffix: 'maj7',  label: 'major 7th',             intervals: [0,4,7,11] },
-  { suffix: 'm7',    label: 'minor 7th',             intervals: [0,3,7,10] },
-  { suffix: 'm7b5',  label: 'half-diminished',       intervals: [0,3,6,10] },
-  { suffix: 'dim7',  label: 'diminished 7th',        intervals: [0,3,6,9] },
-  { suffix: 'mMaj7', label: 'minor-major 7th',       intervals: [0,3,7,11] },
-  { suffix: '7#5',   label: 'dominant 7 sharp 5',    intervals: [0,4,8,10] },
-  { suffix: '7b5',   label: 'dominant 7 flat 5',     intervals: [0,4,6,10] },
-  { suffix: 'add9',  label: 'add 9 (add2)',          intervals: [0,2,4,7] },
-  { suffix: 'madd9', label: 'minor add 9',           intervals: [0,2,3,7] },
-  { suffix: 'add11', label: 'add 11 (add4)',         intervals: [0,4,5,7] },
-  { suffix: '9',     label: 'dominant 9th',          intervals: [0,2,4,7,10] },
-  { suffix: 'maj9',  label: 'major 9th',             intervals: [0,2,4,7,11] },
-  { suffix: 'm9',    label: 'minor 9th',             intervals: [0,2,3,7,10] },
-  { suffix: '7b9',   label: 'dominant 7 flat 9',     intervals: [0,1,4,7,10] },
-  { suffix: '7#9',   label: 'dominant 7 sharp 9',    intervals: [0,3,4,7,10] },
-  { suffix: '7#11',  label: 'dominant 7 sharp 11',   intervals: [0,4,6,7,10] },
-  { suffix: '11',    label: 'dominant 11th',         intervals: [0,2,4,5,7,10] },
-  { suffix: 'm11',   label: 'minor 11th',            intervals: [0,2,3,5,7,10] },
-  { suffix: '13',    label: 'dominant 13th',         intervals: [0,2,4,7,9,10] },
-  { suffix: 'maj13', label: 'major 13th',            intervals: [0,2,4,7,9,11] },
+  { suffix: '',      label: 'major',                intervals: [0,4,7],           family: 'major' },
+  { suffix: 'm',     label: 'minor',                 intervals: [0,3,7],          family: 'minor' },
+  { suffix: 'dim',   label: 'diminished',            intervals: [0,3,6],          family: 'dim' },
+  { suffix: 'aug',   label: 'augmented',             intervals: [0,4,8],          family: 'aug' },
+  { suffix: 'sus2',  label: 'suspended 2nd',         intervals: [0,2,7],          family: 'sus2' },
+  { suffix: 'sus4',  label: 'suspended 4th',         intervals: [0,5,7],          family: 'sus4' },
+  { suffix: '6',     label: 'major 6th',             intervals: [0,4,7,9],        family: 'major' },
+  { suffix: 'm6',    label: 'minor 6th',             intervals: [0,3,7,9],        family: 'minor' },
+  { suffix: '6/9',   label: 'six-nine',              intervals: [0,2,4,7,9],      family: 'major' },
+  { suffix: '7',     label: 'dominant 7th',          intervals: [0,4,7,10],       family: 'major' },
+  { suffix: 'maj7',  label: 'major 7th',             intervals: [0,4,7,11],       family: 'major' },
+  { suffix: 'm7',    label: 'minor 7th',             intervals: [0,3,7,10],       family: 'minor' },
+  { suffix: 'm7b5',  label: 'half-diminished',       intervals: [0,3,6,10],       family: 'dim' },
+  { suffix: 'dim7',  label: 'diminished 7th',        intervals: [0,3,6,9],        family: 'dim' },
+  { suffix: 'mMaj7', label: 'minor-major 7th',       intervals: [0,3,7,11],       family: 'minor' },
+  { suffix: '7#5',   label: 'dominant 7 sharp 5',    intervals: [0,4,8,10],       family: 'aug' },
+  { suffix: '7b5',   label: 'dominant 7 flat 5',     intervals: [0,4,6,10],       family: 'major' },
+  { suffix: 'add9',  label: 'add 9 (add2)',          intervals: [0,2,4,7],        family: 'major' },
+  { suffix: 'madd9', label: 'minor add 9',           intervals: [0,2,3,7],        family: 'minor' },
+  { suffix: 'add11', label: 'add 11 (add4)',         intervals: [0,4,5,7],        family: 'major' },
+  { suffix: '9',     label: 'dominant 9th',          intervals: [0,2,4,7,10],     family: 'major' },
+  { suffix: 'maj9',  label: 'major 9th',             intervals: [0,2,4,7,11],     family: 'major' },
+  { suffix: 'm9',    label: 'minor 9th',             intervals: [0,2,3,7,10],     family: 'minor' },
+  { suffix: '7b9',   label: 'dominant 7 flat 9',     intervals: [0,1,4,7,10],     family: 'major' },
+  { suffix: '7#9',   label: 'dominant 7 sharp 9',    intervals: [0,3,4,7,10],     family: 'major' },
+  { suffix: '7#11',  label: 'dominant 7 sharp 11',   intervals: [0,4,6,7,10],     family: 'major' },
+  { suffix: '11',    label: 'dominant 11th',         intervals: [0,2,4,5,7,10],   family: 'major' },
+  { suffix: 'm11',   label: 'minor 11th',            intervals: [0,2,3,5,7,10],   family: 'minor' },
+  { suffix: '13',    label: 'dominant 13th',         intervals: [0,2,4,7,9,10],   family: 'major' },
+  { suffix: 'maj13', label: 'major 13th',            intervals: [0,2,4,7,9,11],   family: 'major' },
 ];
+
+// The pure triad shape that defines each family — used for stage-one
+// (triad-first) matching, before any extensions are considered.
+const FAMILY_TRIAD_INTERVALS = {
+  major: [0,4,7], minor: [0,3,7], dim: [0,3,6],
+  aug: [0,4,8], sus2: [0,2,7], sus4: [0,5,7],
+};
+
+const TRIAD_TEMPLATES = [];
+for (let root = 0; root < 12; root++) {
+  for (const family of Object.keys(FAMILY_TRIAD_INTERVALS)) {
+    const vec = new Array(12).fill(0);
+    for (const iv of FAMILY_TRIAD_INTERVALS[family]) vec[(root + iv) % 12] = 1;
+    TRIAD_TEMPLATES.push({ root, family, vec });
+  }
+}
 
 const TEMPLATES = [];
 for (let root = 0; root < 12; root++) {
@@ -318,6 +355,9 @@ let mode = 'chord';
 
 let analyserFreq = null;  // large FFT for chroma (chord mode)
 let analyserTime = null;  // smaller buffer for autocorrelation (tuner mode)
+
+let noiseFloorDb = null;   // calibrated per-bin ambient noise profile (chord mode)
+let noiseFloorRms = 0.006; // calibrated ambient RMS floor (tuner mode)
 
 let smoothChroma = new Array(12).fill(0);
 const SMOOTHING = 0.72;
@@ -432,7 +472,7 @@ function freqToPitchClass(freq) {
   pc = ((pc + 9) % 12 + 12) % 12;
   return pc;
 }
-function computeChroma(freqData, sampleRate, fftSize) {
+function computeChroma(freqData, sampleRate, fftSize, noiseFloorDb) {
   const chroma = new Array(12).fill(0);
   const binHz = sampleRate / fftSize;
   const minBin = Math.max(1, Math.floor(55 / binHz));
@@ -440,8 +480,16 @@ function computeChroma(freqData, sampleRate, fftSize) {
   for (let i = minBin; i <= maxBin; i++) {
     const db = freqData[i];
     if (db < -95) continue;
+    let mag = Math.pow(10, db / 20);
+    if (noiseFloorDb) {
+      // spectral subtraction: remove the calibrated ambient noise energy
+      // from this bin (with a little headroom) before it can count toward
+      // a note's presence
+      const floorMag = Math.pow(10, noiseFloorDb[i] / 20);
+      mag = mag - floorMag * 1.4;
+      if (mag <= 0) continue;
+    }
     const freq = i * binHz;
-    const mag = Math.pow(10, db / 20);
     chroma[freqToPitchClass(freq)] += mag;
   }
   const max = Math.max(...chroma, 1e-9);
@@ -453,11 +501,30 @@ function cosineSim(a, b) {
   if (na === 0 || nb === 0) return 0;
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
-function matchChord(chroma) {
-  let best = null, bestAdj = -Infinity, bestScore = 0;
-  for (const t of TEMPLATES) {
+function matchTriad(chroma) {
+  // Stage 1: identify root + basic triad shape (major/minor/dim/aug/sus2/sus4)
+  // using only pure 3-note templates. Fewer notes to match means this stage
+  // is far less likely to get hijacked by noise or extension tones than
+  // matching against the full chord vocabulary directly.
+  let best = null, bestScore = -1;
+  for (const t of TRIAD_TEMPLATES) {
     const score = cosineSim(chroma, t.vec);
-    const adj = score - 0.015 * Math.max(0, t.size - 3); // bias toward simpler chords
+    if (score > bestScore) { bestScore = score; best = t; }
+  }
+  return { root: best.root, family: best.family, score: bestScore };
+}
+
+function matchExtension(chroma, root, family) {
+  // Stage 2: given the confirmed root + triad family, check whether the
+  // remaining chroma energy supports an extension (7th, 9th, 6th, add-tone,
+  // etc.) built on that same triad. Only qualities belonging to this
+  // family are considered, so an extension can never overrule the triad
+  // that was already established in stage 1.
+  const candidates = TEMPLATES.filter(t => t.root === root && t.quality.family === family);
+  let best = null, bestAdj = -Infinity, bestScore = 0;
+  for (const t of candidates) {
+    const score = cosineSim(chroma, t.vec);
+    const adj = score - 0.015 * Math.max(0, t.size - 3); // prefer the simplest fit
     if (adj > bestAdj) { bestAdj = adj; best = t; bestScore = score; }
   }
   return { template: best, score: bestScore };
@@ -480,33 +547,53 @@ function analyzeChordFrame() {
 
   let peakDb = -120;
   for (let i = 0; i < freqData.length; i++) if (freqData[i] > peakDb) peakDb = freqData[i];
-  const level = Math.max(0, Math.min(1, (peakDb + 90) / 60));
+
+  // Gate against the calibrated ambient noise floor rather than a fixed
+  // constant, so a noisy room needs proportionally more signal before the
+  // app starts trying to read a chord out of it.
+  const floorPeakDb = noiseFloorDb ? Math.max(...noiseFloorDb) : -90;
+  const gateDb = floorPeakDb + 8;
+  const level = Math.max(0, Math.min(1, (peakDb - gateDb) / 40));
   signalMeter.style.width = (level * 100).toFixed(0) + '%';
 
-  const rawChroma = computeChroma(freqData, audioCtx.sampleRate, analyserFreq.fftSize);
+  const rawChroma = computeChroma(freqData, audioCtx.sampleRate, analyserFreq.fftSize, noiseFloorDb);
   for (let i = 0; i < 12; i++) smoothChroma[i] = smoothChroma[i]*SMOOTHING + rawChroma[i]*(1-SMOOTHING);
 
-  if (level < 0.08) {
+  if (level < 0.1) {
     matchMeter.style.width = '0%';
     updateWheel(smoothChroma.map(v => v*0.4), null);
     confirmStreak = 0;
     return;
   }
 
-  const { template, score } = matchChord(smoothChroma);
+  // Stage 1: lock the root + triad shape first.
+  const triad = matchTriad(smoothChroma);
+  // Stage 2: only now look for extensions built on top of that triad.
+  const { template, score } = matchExtension(smoothChroma, triad.root, triad.family);
+
   matchMeter.style.width = (Math.max(0, score) * 100).toFixed(0) + '%';
 
-  const CONFIDENCE_THRESHOLD = 0.72;
-  if (score >= CONFIDENCE_THRESHOLD) {
-    const chordKey = template.root + '-' + template.quality.suffix;
+  const TRIAD_THRESHOLD = 0.65;
+  const EXTENSION_THRESHOLD = 0.72;
+  if (triad.score >= TRIAD_THRESHOLD) {
+    // Use the extended chord only if it clearly fits; otherwise fall back
+    // to the plain triad stage 1 already found.
+    const finalTemplate = score >= EXTENSION_THRESHOLD
+      ? template
+      : TEMPLATES.find(t => t.root === triad.root && t.quality.suffix === (
+          triad.family === 'major' ? '' :
+          triad.family === 'minor' ? 'm' :
+          triad.family));
+
+    const chordKey = finalTemplate.root + '-' + finalTemplate.quality.suffix;
     if (chordKey === lastConfirmed) confirmStreak++;
     else { lastConfirmed = chordKey; confirmStreak = 1; }
     if (confirmStreak >= 2) {
-      chordNameEl.textContent = NOTE_NAMES[template.root] + template.quality.suffix;
+      chordNameEl.textContent = NOTE_NAMES[finalTemplate.root] + finalTemplate.quality.suffix;
       chordNameEl.classList.remove('idle');
-      chordQualityEl.textContent = template.quality.label;
-      chordNotesEl.textContent = template.quality.intervals.map(iv => NOTE_NAMES[(template.root+iv)%12]).join('   ');
-      updateWheel(smoothChroma, template.root);
+      chordQualityEl.textContent = finalTemplate.quality.label;
+      chordNotesEl.textContent = finalTemplate.quality.intervals.map(iv => NOTE_NAMES[(finalTemplate.root+iv)%12]).join('   ');
+      updateWheel(smoothChroma, finalTemplate.root);
     }
   } else {
     confirmStreak = 0;
@@ -528,7 +615,7 @@ function yinDetectPitch(buf, sampleRate) {
   let rms = 0;
   for (let i = 0; i < SIZE; i++) rms += buf[i]*buf[i];
   rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.008) return { freq: -1, level: rms };
+  if (rms < Math.max(0.008, noiseFloorRms * 2.5)) return { freq: -1, level: rms };
 
   const minFreq = 55, maxFreq = 1000;
   const tauMin = Math.max(2, Math.floor(sampleRate / maxFreq));
@@ -654,6 +741,50 @@ function analyzeTunerFrame() {
   setNeedle(smoothCents);
 }
 
+/* ---------------- Ambient noise calibration ----------------
+   Briefly samples whatever is present the moment listening starts (room
+   hum, hiss, fan noise, etc.) and stores it as a baseline. That baseline is
+   then subtracted from every subsequent frame, so steady background noise
+   doesn't get read as part of a chord or thrown into the tuner's pitch
+   estimate. */
+function calibrateNoiseFloor(durationMs) {
+  return new Promise(resolve => {
+    const bins = analyserFreq.frequencyBinCount;
+    const sumDb = new Float64Array(bins);
+    let framesFreq = 0;
+    let sumRms = 0, framesTime = 0;
+    const startTime = performance.now();
+
+    function step() {
+      const freqData = new Float32Array(bins);
+      analyserFreq.getFloatFrequencyData(freqData);
+      for (let i = 0; i < bins; i++) {
+        const v = freqData[i];
+        sumDb[i] += (v === -Infinity ? -140 : v);
+      }
+      framesFreq++;
+
+      const buf = new Float32Array(analyserTime.fftSize);
+      analyserTime.getFloatTimeDomainData(buf);
+      let rms = 0;
+      for (let i = 0; i < buf.length; i++) rms += buf[i]*buf[i];
+      sumRms += Math.sqrt(rms / buf.length);
+      framesTime++;
+
+      if (performance.now() - startTime < durationMs) {
+        requestAnimationFrame(step);
+      } else {
+        const floor = new Float32Array(bins);
+        for (let i = 0; i < bins; i++) floor[i] = sumDb[i] / framesFreq;
+        noiseFloorDb = floor;
+        noiseFloorRms = sumRms / framesTime;
+        resolve();
+      }
+    }
+    step();
+  });
+}
+
 /* ---------------- Main loop ---------------- */
 function loop() {
   if (!running) return;
@@ -691,7 +822,7 @@ async function start() {
   running = true;
   toggleBtn.classList.add('on');
   statusEl.classList.remove('error');
-  statusEl.textContent = 'Listening';
+  statusEl.textContent = 'Calibrating noise floor — stay quiet…';
 
   chordNameEl.textContent = '—'; chordNameEl.classList.add('idle');
   chordQualityEl.textContent = ''; chordNotesEl.textContent = '';
@@ -702,7 +833,12 @@ async function start() {
   smoothCents = 0; smoothFreq = 0;
   lastConfirmed = null; confirmStreak = 0;
   candidateMidi = null; candidateStreak = 0; lockedMidi = null; lastSignalTime = 0;
+  noiseFloorDb = null;
 
+  await calibrateNoiseFloor(500);
+  if (!running) return; // stopped while calibrating
+
+  statusEl.textContent = 'Listening';
   loop();
 }
 
@@ -722,6 +858,7 @@ function stop() {
   updateWheel(new Array(12).fill(0), null);
   setNeedle(0);
   candidateMidi = null; candidateStreak = 0; lockedMidi = null; lastSignalTime = 0;
+  noiseFloorDb = null; noiseFloorRms = 0.006;
 }
 
 toggleBtn.addEventListener('click', () => { if (running) stop(); else start(); });
